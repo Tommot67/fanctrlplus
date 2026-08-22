@@ -38,4 +38,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ inputs.version }}
-        run: gh release create "v$VERSION" "release/fanctrlplus-$VERSION.txz" --title "v$VERSION" --generate-notes
+        run: |
+          cat > release-notes.md <<'EOF'
+          ## Install / update in Unraid
+
+          In **Plugins → Install Plugin**, paste this URL:
+
+          `https://raw.githubusercontent.com/Tommot67/fanctrlplus/main/unraid/fanctrlplus.plg`
+
+          The plugin manifest downloads the matching `fanctrlplus-VERSION.txz` asset from this release and validates its checksum.
+          EOF
+          sed -i "s/VERSION/$VERSION/g" release-notes.md
+          gh release create "v$VERSION" "release/fanctrlplus-$VERSION.txz" --title "v$VERSION" --generate-notes --notes-file release-notes.md
