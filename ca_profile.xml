@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Maintainer>
-  <Icon>https://raw.githubusercontent.com/ck9393/fanctrlplus/main/images/fanctrlplus.png</Icon>
+  <Icon>https://raw.githubusercontent.com/Tommot67/fanctrlplus/main/images/fanctrlplus.png</Icon>
   <Profile>
-    FanCtrl Plus author. Personal project for Unraid, developed from real-world needs.
+    Maintainer of FanCtrl Plus + OpenFAN, a fork of FanCtrl Plus by ck9393. Adds OpenFAN and OpenFAN Micro support while retaining local PWM control.
   </Profile>
-  <Forum>https://forums.unraid.net/topic/191722-plugin-fancrtl-plus/</Forum>
-  <DonateLink>https://www.paypal.com/paypalme/cck9393</DonateLink>
-  <DonateText>If you like my work, please consider donating!</DonateText>
+  <Forum>https://github.com/Tommot67/fanctrlplus/issues</Forum>
 </Maintainer>

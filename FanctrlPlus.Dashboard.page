@@ -164,11 +164,11 @@ $isResponsiveWebgui = version_compare((parse_ini_file('/etc/unraid-version')['ve
 $tbodyClass = $isResponsiveWebgui ? 'mixed' : 'sortable';
 
 $headerSection = $isResponsiveWebgui
-  ? "<h3 class='tile-header-main'>FanCtrl Plus</h3>\n<span class='fanctrlplus-status $status_color'>Status: $status_text</span>"
-  : "FanCtrl Plus<br>\n<span class='fanctrlplus-status $status_color'>Status: $status_text</span><br>";
+  ? "<h3 class='tile-header-main'>FanCtrl Plus + OpenFAN</h3>\n<span class='fanctrlplus-status $status_color'>Status: $status_text</span>"
+  : "FanCtrl Plus + OpenFAN<br>\n<span class='fanctrlplus-status $status_color'>Status: $status_text</span><br>";
 
 $mytiles[$pluginname]['column2'] = <<<EOT
-<tbody id="fanctrlplus-dashboard" class="$tbodyClass" title="FanCtrl Plus">
+<tbody id="fanctrlplus-dashboard" class="$tbodyClass" title="FanCtrl Plus + OpenFAN">
   <tr>
     <td>
       <span class="tile-header">
@@ -180,7 +180,7 @@ $mytiles[$pluginname]['column2'] = <<<EOT
         </span>
         <span class="tile-header-right">
           <span class="tile-header-right-controls">
-            <a href="/Settings/fanctrlplus" title="Go to FanCtrl Plus settings">
+            <a href="/Settings/fanctrlplus" title="Go to FanCtrl Plus + OpenFAN settings">
               <i class="fa fa-fw fa-cog control"></i>
             </a>
         </span>

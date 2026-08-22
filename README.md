@@ -1,10 +1,16 @@
-# **FanCtrl Plus**
+# **FanCtrl Plus + OpenFAN**
 
-**FanCtrl Plus** is an Unraid plugin that provides automatic fan control based on the temperatures of HDDs, NVMe drives, Unassigned Devices, and optionally the CPU.  
+**FanCtrl Plus + OpenFAN** is an Unraid plugin maintained by **Tommot67** that provides automatic fan control based on the temperatures of HDDs, NVMe drives, Unassigned Devices, and optionally the CPU.
 
 It supports local Linux PWM controllers as well as OpenFAN controllers through
 their HTTP APIs: OpenFAN Controller (channels 0–9) and OpenFAN Micro (one fan,
 channel 0).
+
+## Upstream attribution
+
+This project is a fork of [FanCtrl Plus by ck9393](https://github.com/ck9393/fanctrlplus).
+It retains the original local PWM/hwmon functionality and adds OpenFAN and
+OpenFAN Micro support. Please report fork-specific issues to this repository.
 Each fan configuration can monitor specific drives or the CPU, define a temperature range, and scale fan speed automatically using a linear control algorithm.  
 Configuration is done through a user-friendly interface, with custom thresholds, intervals, and labels available per fan.
 
@@ -27,15 +33,7 @@ Configuration is done through a user-friendly interface, with custom thresholds,
 
 ## 🔧 Manual Installation
 
-**FanCtrl Plus** is available in Community Apps (CA). Just search for “**FanCtrl Plus**” to install.
+Install **FanCtrl Plus + OpenFAN** from this fork's plugin URL after its release package has been published.
 
 Support / Issues
-- https://forums.unraid.net/topic/191722-plugin-fancrtl-plus/
-
-- If you find this plugin helpful, consider buying me a coffee!
-
-<p align="left">
-  <a href="https://www.paypal.com/paypalme/cck9393" target="_blank">
-    <img src="https://raw.githubusercontent.com/ck9393/fanctrlplus/main/.github/assets/donate.png" alt="Donate" width="90">
-  </a>
-</p>
+- https://github.com/Tommot67/fanctrlplus/issues

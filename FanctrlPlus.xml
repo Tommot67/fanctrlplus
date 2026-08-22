@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Containers>
   <Plugin>True</Plugin>
-  <PluginURL>https://raw.githubusercontent.com/ck9393/fanctrlplus/main/unraid/fanctrlplus.plg</PluginURL>
-  <PluginAuthor>ck9393</PluginAuthor>
+  <PluginURL>https://raw.githubusercontent.com/Tommot67/fanctrlplus/main/unraid/fanctrlplus.plg</PluginURL>
+  <PluginAuthor>Tommot67</PluginAuthor>
   <Category>Tools:System</Category>
-  <Name>FanCtrl Plus</Name>
-  <Description>FanCtrl Plus provides automatic fan speed control based on HDD, NVMe, Unassigned Devices, and optional CPU temperatures, with fully customizable fan-to-disk mapping and UI.</Description>
+  <Name>FanCtrl Plus + OpenFAN</Name>
+  <Description>FanCtrl Plus + OpenFAN is a Tommot67-maintained fork of FanCtrl Plus by ck9393. It adds OpenFAN and OpenFAN Micro control to the original local PWM functionality.</Description>
   <MinVer>6.9.0</MinVer>
-  <Support>https://forums.unraid.net/topic/191722-plugin-fancrtl-plus/</Support>
-  <Icon>https://raw.githubusercontent.com/ck9393/fanctrlplus/main/images/fanctrlplus.png</Icon>
-  <DonateText>If you find this plugin helpful, consider buying me a coffee!</DonateText>
-  <DonateLink>https://www.paypal.com/paypalme/cck9393</DonateLink>
+  <Support>https://github.com/Tommot67/fanctrlplus/issues</Support>
+  <Icon>https://raw.githubusercontent.com/Tommot67/fanctrlplus/main/images/fanctrlplus.png</Icon>
 </Containers>

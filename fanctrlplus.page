@@ -1,5 +1,5 @@
 Menu="Utilities"
-Title="FanCtrl Plus"
+Title="FanCtrl Plus + OpenFAN"
 Icon="fanctrlplus.png"
 ---
 <?php
@@ -20,7 +20,7 @@ HTML;
     if (titleDiv) {
       titleDiv.innerHTML = `
         <i class="icon-fanctrlplus" style="font-size:20px; vertical-align:middle;"></i>
-        <span style="margin-left:8px; vertical-align:middle;">FanCtrl Plus Configuration</span>`;
+        <span style="margin-left:8px; vertical-align:middle;">FanCtrl Plus + OpenFAN Configuration</span>`;
     }
   });
 </script>
@@ -1685,8 +1685,8 @@ $(function() {
       <li>Fan response to PWM 0 varies: some fans continue spinning slowly (e.g. 100–200 RPM), while others stop completely. This is determined by hardware, not software.</li>
       <li>The temperature shown in syslog and the Dashboard tile is the <strong>highest</strong> among the selected disks, or the CPU temperature — whichever is driving the current fan speed.</li>
       <li>When the <strong>Stop</strong> button is clicked, all configured fans are set to 50% speed to prevent stalling or uncontrolled RPM spikes.</li>
-      <li>If you clicked <strong>Stop</strong> before rebooting, <strong>FanCtrl Plus</strong> will auto-start after the array is started. To fully disable fan control on reboot, either <strong>uninstall the plugin</strong> or <strong>disable all fan configurations</strong>.</li>
-      <li>If you uninstall <strong>FanCtrl Plus</strong>, it's recommended to reboot Unraid to restore fan control to the motherboard or BIOS defaults.</li>
+      <li>If you clicked <strong>Stop</strong> before rebooting, <strong>FanCtrl Plus + OpenFAN</strong> will auto-start after the array is started. To fully disable fan control on reboot, either <strong>uninstall the plugin</strong> or <strong>disable all fan configurations</strong>.</li>
+      <li>If you uninstall <strong>FanCtrl Plus + OpenFAN</strong>, it's recommended to reboot Unraid to restore fan control to the motherboard or BIOS defaults.</li>
     </ul>
   </blockquote>
 </div>
