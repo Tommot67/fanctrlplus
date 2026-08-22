@@ -5,6 +5,7 @@ $plugin = 'fanctrlplus';
 $cfgpath = "/boot/config/plugins/$plugin";
 $rename_map = [];
 $used_files = [];
+$used_openfan_channels = [];
 $docroot = $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 
 if (!is_dir($cfgpath)) {
@@ -22,7 +23,26 @@ if (!isset($_POST['#file']) || !is_array($_POST['#file'])) {
 
 foreach ($_POST['#file'] as $i => $file) {
   $old_file = basename($file);
+  $controller_type = $_POST['controller_type'][$i] ?? 'hwmon';
+  if (!in_array($controller_type, ['hwmon', 'openfan_micro', 'openfan'], true)) $controller_type = 'hwmon';
   $controller = $_POST['controller'][$i] ?? '';
+  $openfan_host = trim($_POST['openfan_host'][$i] ?? '');
+  $openfan_port = trim($_POST['openfan_port'][$i] ?? ($controller_type === 'openfan_micro' ? '80' : '3000'));
+  $openfan_channel = trim($_POST['openfan_channel'][$i] ?? '0');
+  if ($controller_type !== 'hwmon') {
+    if ($openfan_host === '' || !preg_match('#^(https?://)?[A-Za-z0-9.-]+$#', $openfan_host) || !ctype_digit($openfan_port) || (int)$openfan_port < 1 || (int)$openfan_port > 65535 || !ctype_digit($openfan_channel) || (int)$openfan_channel > 9) {
+      ob_clean(); echo json_encode(['status' => 'error', 'message' => 'OpenFAN host, port or channel is invalid.']); exit;
+    }
+    if ($controller_type === 'openfan_micro') { $openfan_channel = '0'; $openfan_port = $openfan_port ?: '80'; }
+    $controller = $controller_type . '://' . $openfan_host . ':' . $openfan_port . '/' . $openfan_channel;
+    $openfan_key = strtolower(preg_replace('#^https?://#i', '', $openfan_host) . '|' . $openfan_port . '|' . $openfan_channel);
+    if (isset($used_openfan_channels[$openfan_key])) {
+      ob_clean();
+      echo json_encode(['status' => 'error', 'message' => 'The same OpenFAN host, port and channel can only be assigned once.']);
+      exit;
+    }
+    $used_openfan_channels[$openfan_key] = true;
+  }
   $custom = trim($_POST['custom'][$i] ?? '');
   $interval = $_POST['interval'][$i] ?? '';
   $expected_file = $plugin . '_' . $custom . '.cfg';
@@ -183,6 +203,10 @@ foreach ($_POST['#file'] as $i => $file) {
     'label'      => $custom,
     'service'    => $_POST['service'][$i] ?? '0',
     'controller' => $controller,
+    'controller_type' => $controller_type,
+    'openfan_host' => $openfan_host,
+    'openfan_port' => $openfan_port,
+    'openfan_channel' => $openfan_channel,
     'pwm'        => $pwm,
     'max'        => $max_pwm,
     'idle'       => (string)$idle_abs,

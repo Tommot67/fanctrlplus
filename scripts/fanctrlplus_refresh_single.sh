@@ -6,7 +6,9 @@ custom="$1"
 cfg_file="$cfg_path/${plugin}_$custom.cfg"
 [[ -f "$cfg_file" ]] || exit 1
 source "$cfg_file"
+source "$(dirname "$0")/openfan_api.sh"
 max="${max:-255}"
+controller_type="${controller_type:-hwmon}"
 controller_enable="${controller}_enable"
 
 # === CPU 温度 ===
@@ -101,17 +103,23 @@ if [[ ! "$max_temp" =~ ^[0-9]+$ ]]; then
 fi
 
 # 强制写 PWM
-[[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
-echo "$pwm_val" > "$controller"
+if [[ "$controller_type" == "hwmon" ]]; then
+  [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
+  echo "$pwm_val" > "$controller"
+else
+  openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$pwm_val"
+fi
 sleep 4
 
 # 采集 RPM
 fan_index=""
-if [[ "$controller" =~ pwm([0-9]+)$ ]]; then
+if [[ "$controller_type" == "hwmon" && "$controller" =~ pwm([0-9]+)$ ]]; then
   fan_index="${BASH_REMATCH[1]}"
   fan_path="$(dirname "$controller")/fan${fan_index}_input"
 fi
-if [[ -n "$fan_path" && -f "$fan_path" ]]; then
+if [[ "$controller_type" != "hwmon" ]] && openfan_get_status "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel"; then
+  rpm="$OPENFAN_RPM"
+elif [[ -n "$fan_path" && -f "$fan_path" ]]; then
   rpm=$(cat "$fan_path")
 else
   rpm="?"

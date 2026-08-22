@@ -4,6 +4,7 @@
 cfg_file="$1"
 [[ -f "$cfg_file" ]] || exit 1
 source "$cfg_file"
+source "$(dirname "$0")/openfan_api.sh"
 max="${max:-255}"
 
 # ===== Fan Speed on Idle (ABS) =====
@@ -29,10 +30,11 @@ fi
 
 plugin="fanctrlplus"
 custom="${custom:-$(basename "$cfg_file" .cfg)}"
+controller_type="${controller_type:-hwmon}"
 controller_enable="${controller}_enable"
 
 # 推导 RPM 读取路径
-if [[ "$controller" =~ pwm([0-9]+)$ ]]; then
+if [[ "$controller_type" == "hwmon" && "$controller" =~ pwm([0-9]+)$ ]]; then
   fan_index="${BASH_REMATCH[1]}"
   fan_path="$(dirname "$controller")/fan${fan_index}_input"
 else
@@ -40,6 +42,25 @@ else
 fi
 
 prev_pwm=-1
+
+apply_fan_speed() {
+  if [[ "$controller_type" == "hwmon" ]]; then
+    [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
+    echo "$1" > "$controller"
+  else
+    openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$1"
+  fi
+}
+
+read_fan_rpm() {
+  if [[ "$controller_type" == "hwmon" ]]; then
+    [[ -n "$fan_path" && -f "$fan_path" ]] && cat "$fan_path" || echo "?"
+  elif openfan_get_status "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel"; then
+    echo "$OPENFAN_RPM"
+  else
+    echo "?"
+  fi
+}
 
 while true; do
   # === CPU 温度 ===
@@ -143,14 +164,9 @@ while true; do
 
   # === 若 PWM 有明显变化，或首次 ===
   if [[ "$prev_pwm" == -1 ]]; then
-    [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
-    echo "$pwm_val" > "$controller"
+    apply_fan_speed "$pwm_val"
     sleep 4
-    if [[ -n "$fan_path" && -f "$fan_path" ]]; then
-      rpm=$(cat "$fan_path")
-    else
-      rpm="?"
-    fi
+    rpm=$(read_fan_rpm)
 
     # 无条件写一次
     label="[${custom}]"
@@ -158,14 +174,9 @@ while true; do
     prev_pwm=$pwm_val
   else
     if (( pwm_val - prev_pwm >= 5 || prev_pwm - pwm_val >= 5 )); then
-      [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
-      echo "$pwm_val" > "$controller"
+      apply_fan_speed "$pwm_val"
       sleep 4
-      if [[ -n "$fan_path" && -f "$fan_path" ]]; then
-        rpm=$(cat "$fan_path")
-      else
-        rpm="?"
-      fi
+      rpm=$(read_fan_rpm)
 
       label="[${custom}]"
       log_enable=$(grep '^syslog=' "$cfg_file" | cut -d'"' -f2)

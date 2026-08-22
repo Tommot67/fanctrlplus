@@ -41,6 +41,20 @@ function scan_dir($dir) {
 $op = $_GET['op'] ?? $_POST['op'] ?? '';
 
 switch ($op) {
+  case 'openfan_test':
+    $type = $_POST['type'] ?? '';
+    $host = trim($_POST['host'] ?? '');
+    $port = trim($_POST['port'] ?? '');
+    if (!in_array($type, ['openfan_micro', 'openfan'], true) || !preg_match('#^(https?://)?[A-Za-z0-9.-]+$#', $host) || !ctype_digit($port)) {
+      json_response(['status' => 'error', 'message' => 'Invalid OpenFAN connection details']);
+    }
+    if (!preg_match('#^https?://#', $host)) $host = 'http://' . $host;
+    $url = rtrim($host, '/') . ':' . (int)$port . '/api/v0/' . ($type === 'openfan_micro' ? 'openfan/status' : 'info');
+    $ctx = stream_context_create(['http' => ['timeout' => 4, 'ignore_errors' => true]]);
+    $body = @file_get_contents($url, false, $ctx);
+    $json = $body === false ? null : json_decode($body, true);
+    if (!is_array($json) || ($json['status'] ?? '') !== 'ok') json_response(['status' => 'error', 'message' => 'Controller did not return a valid API response']);
+    json_response(['status' => 'ok', 'message' => 'Connected']);
     
   case 'identify':
     $pwm  = $_GET['pwm']  ?? '';

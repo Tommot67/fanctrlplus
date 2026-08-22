@@ -861,6 +861,10 @@ $(function() {
       custom: $block.find('input[name^="custom["]').val(),
       service: $block.find('select[name^="service["]').val(),
       controller: $block.find('select[name^="controller["]').val(),
+      controller_type: $block.find('.controller-type').val(),
+      openfan_host: $block.find('.openfan-host').val(),
+      openfan_port: $block.find('.openfan-port').val(),
+      openfan_channel: $block.find('.openfan-channel').val(),
       pwm_percent: stripUnit($block.find('input[name^="pwm_percent["]').val()),
       max_percent: stripUnit($block.find('input[name^="max_percent["]').val()),
       idle_percent: stripUnit($block.find('input[name^="idle_percent["]').val() || '0'),
@@ -886,6 +890,10 @@ $(function() {
         custom: $block.find('input[name^="custom["]').val(),
         service: $block.find('select[name^="service["]').val(),
         controller: $block.find('select[name^="controller["]').val(),
+        controller_type: $block.find('.controller-type').val(),
+        openfan_host: $block.find('.openfan-host').val(),
+        openfan_port: $block.find('.openfan-port').val(),
+        openfan_channel: $block.find('.openfan-channel').val(),
         pwm_percent: stripUnit($block.find('input[name^="pwm_percent["]').val()),
         max_percent: stripUnit($block.find('input[name^="max_percent["]').val()),
         idle_percent: stripUnit($block.find('input[name^="idle_percent["]').val() || '0'),
@@ -992,11 +1000,42 @@ $(function() {
 
   $(document).on('change', '.pwm-controller', updatePwmDropdowns);
 
+  function updateControllerType($block) {
+    const type = $block.find('.controller-type').val();
+    const external = type === 'openfan' || type === 'openfan_micro';
+    $block.find('.local-controller-row').toggle(!external);
+    $block.find('.openfan-controller-row').toggle(external);
+    $block.find('.openfan-channel-row').toggle(type === 'openfan');
+    if (type === 'openfan_micro') {
+      $block.find('.openfan-channel').val('0');
+      const port = $block.find('.openfan-port');
+      if (!port.val() || port.val() === '3000') port.val('80');
+    } else if (type === 'openfan') {
+      const port = $block.find('.openfan-port');
+      if (!port.val() || port.val() === '80') port.val('3000');
+    }
+  }
+
+  $('.fan-block').each(function () { updateControllerType($(this)); });
+  $(document).on('change', '.controller-type', function () { updateControllerType($(this).closest('.fan-block')); });
+  $(document).on('click', '.openfan-test-btn', function () {
+    const $block = $(this).closest('.fan-block');
+    const $result = $block.find('.openfan-test-result').text('Testing…').css('color', '');
+    $.post('/plugins/fanctrlplus/include/FanctrlLogic.php', {
+      op: 'openfan_test', type: $block.find('.controller-type').val(),
+      host: $block.find('.openfan-host').val().trim(), port: $block.find('.openfan-port').val()
+    }, function (data) {
+      const ok = data && data.status === 'ok';
+      $result.text(ok ? 'Connected' : (data.message || 'Connection failed')).css('color', ok ? '#4caf50' : '#f44336');
+    }, 'json').fail(function () { $result.text('Connection failed').css('color', '#f44336'); });
+  });
+
   $(document).on('click', '#apply-btn', function (e) {
     let valid = true;
     let errorMsg = '';
 
     const namesSeen = new Set();
+    const openfanChannelsSeen = new Set();
     let duplicateFound = false;
 
     $('.custom-name-input').each(function() {
@@ -1009,6 +1048,7 @@ $(function() {
       const pwm_percent = stripUnit(block.find('input[name^="pwm_percent["]').val());
       const max_percent = stripUnit(block.find('input[name^="max_percent["]').val());
       const pwm = block.find('.pwm-controller').val();
+      const type = block.find('.controller-type').val();
       
       if (name === '') {
         valid = false;
@@ -1021,11 +1061,28 @@ $(function() {
         return false;
       }
 
-      if (!pwm || pwm === "") {
+      if (type === 'hwmon' && (!pwm || pwm === "")) {
         valid = false;
         errorMsg = 'Please select a PWM controller for each fan.';
         return false;
-      }  
+      }
+      if (type !== 'hwmon' && (!block.find('.openfan-host').val().trim() || !block.find('.openfan-port').val())) {
+        valid = false;
+        errorMsg = 'Please enter an OpenFAN host and port for each OpenFAN controller.';
+        return false;
+      }
+      if (type !== 'hwmon') {
+        const host = block.find('.openfan-host').val().trim().replace(/^https?:\/\//i, '').toLowerCase();
+        const port = block.find('.openfan-port').val().trim();
+        const channel = type === 'openfan_micro' ? '0' : block.find('.openfan-channel').val();
+        const key = `${host}|${port}|${channel}`;
+        if (openfanChannelsSeen.has(key)) {
+          valid = false;
+          errorMsg = 'An OpenFAN host, port and channel can only be assigned to one fan configuration.';
+          return false;
+        }
+        openfanChannelsSeen.add(key);
+      }
 
       if (/temp_/i.test(name)) {
         valid = false;

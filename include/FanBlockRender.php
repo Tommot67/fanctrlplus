@@ -10,6 +10,10 @@ if (is_file($label_file)) {
 }
 
 function render_fan_block($cfg, $i, $pwms, $disks, $pwm_labels, $cpu_sensors) {
+  $controller_type = $cfg['controller_type'] ?? 'hwmon';
+  $openfan_host = $cfg['openfan_host'] ?? '';
+  $openfan_port = $cfg['openfan_port'] ?? ($controller_type === 'openfan_micro' ? '80' : '3000');
+  $openfan_channel = $cfg['openfan_channel'] ?? '0';
   // PWM fallback（如果值为空，则默认 fallback 为 40% 和 100%）
   $pwm_raw = isset($cfg['pwm']) && is_numeric($cfg['pwm']) ? $cfg['pwm'] : 102;
   $max_raw = isset($cfg['max']) && is_numeric($cfg['max']) ? $cfg['max'] : 255;
@@ -106,6 +110,17 @@ function render_fan_block($cfg, $i, $pwms, $disks, $pwm_labels, $cpu_sensors) {
 
         <!-- PWM Controller -->
         <tr>
+          <td class="fcp-help-cursor" title="Choose a local Linux PWM controller or an OpenFAN controller accessed through its HTTP API.">Controller Type:</td>
+          <td>
+            <select name="controller_type[<?=$i?>]" class="controller-type">
+              <option value="hwmon" <?=$controller_type === 'hwmon' ? 'selected' : ''?>>Local PWM / hwmon</option>
+              <option value="openfan_micro" <?=$controller_type === 'openfan_micro' ? 'selected' : ''?>>OpenFAN Micro</option>
+              <option value="openfan" <?=$controller_type === 'openfan' ? 'selected' : ''?>>OpenFAN Controller</option>
+            </select>
+          </td>
+        </tr>
+
+        <tr class="local-controller-row">
           <td class="fcp-help-cursor" title="Each fan corresponds to a PWM controller (pwm1, pwm2, etc). Select the one controlling this fan. You can use the Identify section below to locate and label each fan.">PWM Controller:</td>
           <td>
             <select name="controller[<?=$i?>]" class="pwm-controller">
@@ -121,6 +136,22 @@ function render_fan_block($cfg, $i, $pwms, $disks, $pwm_labels, $cpu_sensors) {
               <?php endforeach; ?>
             </select>
           </td>
+        </tr>
+        <tr class="openfan-controller-row">
+          <td class="fcp-help-cursor" title="Hostname or IP address of the OpenFAN API server.">OpenFAN Host:</td>
+          <td><input type="text" name="openfan_host[<?=$i?>]" class="openfan-host" value="<?=htmlspecialchars($openfan_host)?>" placeholder="192.168.1.50"></td>
+        </tr>
+        <tr class="openfan-controller-row">
+          <td>OpenFAN Port:</td>
+          <td><input type="number" min="1" max="65535" name="openfan_port[<?=$i?>]" class="openfan-port" value="<?=htmlspecialchars($openfan_port)?>"></td>
+        </tr>
+        <tr class="openfan-controller-row openfan-channel-row">
+          <td>Fan Channel:</td>
+          <td><select name="openfan_channel[<?=$i?>]" class="openfan-channel"><?php for ($channel = 0; $channel < 10; $channel++): ?><option value="<?=$channel?>" <?=$openfan_channel == $channel ? 'selected' : ''?>><?=$channel?></option><?php endfor; ?></select></td>
+        </tr>
+        <tr class="openfan-controller-row">
+          <td>Connection:</td>
+          <td><button type="button" class="openfan-test-btn">Test connection</button> <span class="openfan-test-result"></span></td>
         </tr>
 
         <!-- Fan Speed Range -->

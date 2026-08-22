@@ -65,6 +65,8 @@ fanctrlplus.stop() {
     [[ "$service" != "1" ]] && continue
 
     pwm=$(grep -Po '^controller="\K[^"]+' "$cfg")
+    controller_type=$(grep -Po '^controller_type="\K[^"]+' "$cfg")
+    [[ -n "$controller_type" && "$controller_type" != "hwmon" ]] && continue
     [[ -z "$pwm" || ! -w "$pwm" ]] && continue
 
     enable="${pwm}_enable"
