@@ -48,7 +48,10 @@ apply_fan_speed() {
     [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
     echo "$1" > "$controller"
   else
-    openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$1"
+    if ! openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$1"; then
+      logger -t fanctrlplus "[$custom] OpenFAN API write failed: ${openfan_host}:${openfan_port}, channel ${openfan_channel}"
+      return 1
+    fi
   fi
 }
 

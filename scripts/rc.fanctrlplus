@@ -5,8 +5,10 @@ cfg_path="/boot/config/plugins/$plugin"
 loop_script="/usr/local/emhttp/plugins/$plugin/scripts/fanctrlplus_loop.sh"
 dashboard_updater="/usr/local/emhttp/plugins/$plugin/scripts/fanctrlplus_dashboard_update.sh"
 pid_dir="/var/run"
+runtime_log="/var/log/fanctrlplus.log"
 
 fanctrlplus.start() {
+  touch "$runtime_log"
   # 清除用户手动 stop 标记
   rm -f /var/run/fanctrlplus.user_stopped
 
@@ -28,7 +30,7 @@ fanctrlplus.start() {
 
     [[ -z "$custom_safe" ]] && continue
 
-    nohup "$loop_script" "$cfg" > /dev/null 2>&1 &
+    nohup "$loop_script" "$cfg" >> "$runtime_log" 2>&1 &
     echo $! > "$pid_dir/${plugin}_${custom_safe}.pid"
     logger -t "$plugin" "Started [$custom_safe] from $cfg"
   done
@@ -42,7 +44,7 @@ fanctrlplus.start() {
   # 启动 dashboard updater（避免重复）
   pkill -f "$dashboard_updater" 2>/dev/null
   if [[ -x "$dashboard_updater" ]]; then
-    nohup "$dashboard_updater" >/dev/null 2>&1 &
+    nohup "$dashboard_updater" >> "$runtime_log" 2>&1 &
   fi
 }
 

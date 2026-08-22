@@ -107,7 +107,9 @@ if [[ "$controller_type" == "hwmon" ]]; then
   [[ -f "$controller_enable" ]] && echo 1 > "$controller_enable"
   echo "$pwm_val" > "$controller"
 else
-  openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$pwm_val"
+  if ! openfan_set_pwm "$controller_type" "$openfan_host" "$openfan_port" "$openfan_channel" "$pwm_val"; then
+    logger -t fanctrlplus "[$custom] OpenFAN API write failed: ${openfan_host}:${openfan_port}, channel ${openfan_channel}"
+  fi
 fi
 sleep 4
 
