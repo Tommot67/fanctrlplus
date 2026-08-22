@@ -1,0 +1,41 @@
+name: Release plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (for example 1.3.4)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build package and update manifest
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          chmod +x scripts/build_package.sh
+          scripts/build_package.sh "$VERSION"
+          MD5=$(md5sum "release/fanctrlplus-$VERSION.txz" | awk '{print $1}')
+          sed -i -E "s#<!ENTITY version \"[^\"]+\">#<!ENTITY version \"$VERSION\">#; s#<!ENTITY MD5 \"[^\"]+\">#<!ENTITY MD5 \"$MD5\">#" unraid/fanctrlplus.plg
+      - name: Commit release manifest
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add unraid/fanctrlplus.plg
+          git commit -m "Release v$VERSION" || true
+          git push
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh release create "v$VERSION" "release/fanctrlplus-$VERSION.txz" --title "v$VERSION" --generate-notes
